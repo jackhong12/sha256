@@ -3,25 +3,26 @@
 #include <vector>
 
 class SHA256 {
-  typedef unsigned int word;
+  typedef unsigned int word_t;
+  typedef unsigned char byte_t;
 
 public:
-  SHA256(const unsigned char *Data, size_t Len) {
-    std::vector<unsigned char> PaddingData = padding(Data, Len);
+  SHA256(const byte_t *Data, size_t Len) {
+    std::vector<byte_t> PaddingData = padding(Data, Len);
 
     for (size_t i = 0; i < PaddingData.size(); i += 64) {
-      std::vector<word> W(64, 0);
+      std::vector<word_t> W(64, 0);
 
       // Load the first 16 words from the padding data
       for (size_t j = 0; j < 16; ++j)
         for (size_t k = 0; k < 4; ++k)
           W[j] |=
-              (static_cast<word>(PaddingData[i + j * 4 + k]) << (24 - k * 8));
+              (static_cast<word_t>(PaddingData[i + j * 4 + k]) << (24 - k * 8));
 
       // Extend the first 16 words into the remaining 48 words
       for (size_t j = 16; j < 64; ++j) {
-        word s0 = (W[j - 15] >> 7) ^ (W[j - 15] >> 18) ^ (W[j - 15] >> 3);
-        word s1 = (W[j - 2] >> 17) ^ (W[j - 2] >> 19) ^ (W[j - 2] >> 10);
+        word_t s0 = (W[j - 15] >> 7) ^ (W[j - 15] >> 18) ^ (W[j - 15] >> 3);
+        word_t s1 = (W[j - 2] >> 17) ^ (W[j - 2] >> 19) ^ (W[j - 2] >> 10);
         W[j] = W[j - 16] + s0 + W[j - 7] + s1;
       }
 
@@ -30,28 +31,31 @@ public:
   }
 
   std::string digest() const {
-    std::string result;
-    result.reserve(32);
+    std::string Result;
     for (size_t i = 0; i < 8; ++i) {
       for (int j = 3; j >= 0; --j) {
-        result += static_cast<char>((H[i] >> (j * 8)) & 0xff);
+        byte_t Byte = static_cast<byte_t>((H[i] >> (j * 8)) & 0xff);
+        byte_t Upper = Byte >> 4;
+        byte_t Lower = Byte & 0x0f;
+        Result += (Upper < 10 ? '0' + Upper : 'a' + Upper - 10);
+        Result += (Lower < 10 ? '0' + Lower : 'a' + Lower - 10);
       }
     }
-    return result;
+    return Result;
   }
 
 private:
-  void update(std::vector<word> &W) {
-    word a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6],
+  void update(std::vector<word_t> &W) {
+    word_t a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6],
          h = H[7];
 
     for (size_t j = 0; j < 64; ++j) {
-      word S0 = (a >> 2) ^ (a >> 13) ^ (a >> 22);
-      word maj = (a & b) ^ (a & c) ^ (b & c);
-      word temp2 = S0 + maj;
-      word S1 = (e >> 6) ^ (e >> 11) ^ (e >> 25);
-      word ch = (e & f) ^ (~e & g);
-      word temp1 = h + S1 + ch + K[j] + W[j];
+      word_t S0 = (a >> 2) ^ (a >> 13) ^ (a >> 22);
+      word_t maj = (a & b) ^ (a & c) ^ (b & c);
+      word_t temp2 = S0 + maj;
+      word_t S1 = (e >> 6) ^ (e >> 11) ^ (e >> 25);
+      word_t ch = (e & f) ^ (~e & g);
+      word_t temp1 = h + S1 + ch + K[j] + W[j];
 
       h = g;
       g = f;
@@ -73,12 +77,12 @@ private:
     H[7] += h;
   }
 
-  std::vector<unsigned char> padding(const unsigned char *Data, size_t Len) {
+  std::vector<byte_t> padding(const byte_t *Data, size_t Len) {
     size_t PaddingLen = Len + 9;
     if (PaddingLen % 64 != 0)
       PaddingLen += 64 - (PaddingLen % 64);
 
-    std::vector<unsigned char> PaddingData(PaddingLen, 0);
+    std::vector<byte_t> PaddingData(PaddingLen, 0);
     for (size_t i = 0; i < Len; ++i)
       PaddingData[i] = Data[i];
 
@@ -94,10 +98,10 @@ private:
     return PaddingData;
   }
 
-  word H[8] = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+  word_t H[8] = {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
                0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
 
-  const word K[64] = {
+  const word_t K[64] = {
       0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
       0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
       0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786,
