@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "SHA256.h"
+#include "sha256.h"
 
 TEST(SHA256Test, EmptyString) {
   SHA256 sha256("");
