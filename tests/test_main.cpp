@@ -2,8 +2,26 @@
 #include "SHA256.h"
 
 TEST(SHA256Test, EmptyString) {
-  std::string input = "";
-  SHA256 sha256(reinterpret_cast<const unsigned char*>(input.c_str()), input.size());
-  std::string expected = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-  EXPECT_EQ(sha256.digest(), expected);
+  SHA256 sha256("");
+  EXPECT_EQ(sha256.digest(), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+}
+
+TEST(SHA256Test, String1) {
+  SHA256 sha256("abc");
+  EXPECT_EQ(sha256.digest(), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+}
+
+TEST(SHA256Test, String2) {
+  SHA256 sha256("1234");
+  EXPECT_EQ(sha256.digest(), "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4");
+}
+
+TEST(SHA256Test, String3) {
+  SHA256 sha256("12345678");
+  EXPECT_EQ(sha256.digest(), "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f");
+}
+
+TEST(SHA256Test, String4) {
+  SHA256 sha256("1234567812345678123456781234567812345678123456781234567812345678");
+  EXPECT_EQ(sha256.digest(), "06bcbf53e05cd44da1c9dc7a0737f08eceef318eeab6f4c6743dea34038b62ce");
 }
