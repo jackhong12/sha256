@@ -121,7 +121,6 @@ private:
 
     PaddingData[Len] = 0x80; // Append a single '1' bit (0x80 in hex)
 
-    int Offset = 0;
     size_t BitsLen = Len * 8;
     for (int i = 0; i < 8; ++i) {
       // Append the length of the original data in bits, in big-endian order
